@@ -1,0 +1,59 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Harbor Demo Banking</title>
+<style>
+body{font-family:Arial,sans-serif;margin:0;background:#f1f5f9;color:#18324b}
+header{background:#123454;color:white;padding:24px;text-align:center}
+.notice{background:#fff0c2;padding:12px;text-align:center;font-weight:bold;font-size:13px}
+main{max-width:700px;margin:24px auto;padding:16px}
+.card{background:white;padding:22px;border-radius:12px;margin-bottom:18px;box-shadow:0 3px 12px #0001}
+button{padding:11px 18px;border:0;border-radius:6px;color:white;cursor:pointer;margin:5px}
+.approve{background:#16794b}.reject{background:#b42332}
+.status{font-weight:bold;color:#a66b00}
+.bankcard{background:linear-gradient(135deg,#163b60,#277b91);color:white;padding:22px;border-radius:14px}
+</style>
+</head>
+<body>
+<header>
+<h1>Harbor Demo Banking</h1>
+<p>Banking Interface Demonstration</p>
+</header>
+<div class="notice">DEMO ONLY — NOT A REAL BANK</div>
+<main>
+<section class="card">
+<h2>Welcome</h2>
+<p>This sample website demonstrates a banking-style interface.</p>
+</section>
+<section class="card">
+<h2>Sample Card</h2>
+<div class="bankcard">
+<strong>HARBOR DEMO</strong>
+<p>SIMULATED CARD</p>
+<p>DEMO USER</p>
+</div>
+</section>
+<section class="card">
+<h2>Pending Transaction</h2>
+<p>Transaction: Sample demonstration payment</p>
+<p>Amount: $100.00 (simulated)</p>
+<p>Status: <span class="status" id="status">Pending (Demo)</span></p>
+<button class="approve" onclick="updateStatus('Approved (Demo)')">Approve Demo</button>
+<button class="reject" onclick="updateStatus('Rejected (Demo)')">Reject Demo</button>
+<p id="message">No real money will be transferred.</p>
+</section>
+</main>
+<script>
+function updateStatus(value){
+document.getElementById('status').textContent=value;
+document.getElementById('message').textContent='Demo status updated. No real transaction occurred.';
+}
+</script>
+<footer style="text-align:center;padding:20px;color:#66758a">
+Educational demonstration only.
+</footer>
+</body>
+</html>
