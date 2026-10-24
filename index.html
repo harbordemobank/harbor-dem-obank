@@ -175,6 +175,7 @@ window.signIn = async function () {
     showMessage('Sign-in error: ' + error.message);
   } else {
     showMessage('Signed in successfully: ' + data.user.email);
+window.location.reload();
   }
 };
 
