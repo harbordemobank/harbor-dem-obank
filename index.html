@@ -22,9 +22,53 @@ button{padding:11px 18px;border:0;border-radius:6px;color:white;cursor:pointer;m
 <h1>Harbor Demo Banking</h1>
 <p>Harbor Demo online banking</p>
 </header>
-<div class="notice">
-  DEMO online banking, funds, or transactions.
-</div>
+
+<section class="card">
+  <h2>Customer Sign Up / Sign In</h2>
+
+  <label for="email">Email address</label>
+  <input id="email" type="email"
+         placeholder="Enter your email"
+         autocomplete="email" required
+         style="display:block;width:95%;padding:10px;margin:8px 0;">
+
+  <label for="password">Password</label>
+  <input id="password" type="password"
+         placeholder="Enter your password"
+         autocomplete="current-password" required
+         style="display:block;width:95%;padding:10px;margin:8px 0;">
+
+  <button type="button" onclick="signUp()">Sign Up</button>
+  <button type="button" onclick="signIn()">Sign In</button>
+  <button type="button" onclick="signOut()">Sign Out</button>
+
+  <p id="authMessage" role="status">
+    Sign in or create an account to continue.
+  </p>
+</section>
+<section class="card">
+  <h2>Customer Sign Up / Sign In</h2>
+
+  <label for="email">Email address</label>
+  <input id="email" type="email"
+         placeholder="Enter your email"
+         autocomplete="email"
+         style="display:block;width:95%;padding:10px;margin:8px 0;">
+
+  <label for="password">Password</label>
+  <input id="password" type="password"
+         placeholder="Enter your password"
+         autocomplete="current-password"
+         style="display:block;width:95%;padding:10px;margin:8px 0;">
+
+  <button type="button" onclick="signUp()">Sign Up</button>
+  <button type="button" onclick="signIn()">Sign In</button>
+  <button type="button" onclick="signOut()">Sign Out</button>
+
+  <p id="authMessage" role="status">
+    Sign in or create an account to continue.
+  </p>
+</section>
 <section class="card">
 <h2>Welcome</h2>
 
@@ -60,5 +104,49 @@ document.getElementById('message').textContent='Demo status updated. No real tra
 <footer style="text-align:center;padding:20px;color:#66758a">
 Demo online banking.
 </footer>
+  <script type="module">
+import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
+
+const supabase = createClient(
+  'https://xuyzwadccxbcvhjdwjvh.supabase.co',
+  'PASTE_YOUR_PUBLISHABLE_KEY_HERE'
+);
+
+function showMessage(message) {
+  document.getElementById('authMessage').textContent = message;
+}
+
+window.signUp = async function () {
+  const email = document.getElementById('email').value.trim();
+  const password = document.getElementById('password').value;
+
+  if (!email || !password) {
+    showMessage('Enter your email and password.');
+    return;
+  }
+
+  const { error } = await supabase.auth.signUp({ email, password });
+
+  showMessage(error ? error.message :
+    'Signup started. Check your email if confirmation is required.');
+};
+
+window.signIn = async function () {
+  const email = document.getElementById('email').value.trim();
+  const password = document.getElementById('password').value;
+
+  const { data, error } = await supabase.auth.signInWithPassword({
+    email, password
+  });
+
+  showMessage(error ? error.message :
+    'Signed in successfully: ' + data.user.email);
+};
+
+window.signOut = async function () {
+  const { error } = await supabase.auth.signOut();
+  showMessage(error ? error.message : 'You have signed out.');
+};
+  </script>
 </body>
 </html>
