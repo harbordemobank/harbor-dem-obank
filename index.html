@@ -171,12 +171,14 @@ window.signIn = async function () {
     password
   });
 
+  
   if (error) {
     showMessage('Sign-in error: ' + error.message);
   } else {
     showMessage('Signed in successfully: ' + data.user.email);
-window.location.reload();
+    window.location.href = window.location.href.split('#')[0];
   }
+
 };
 
 window.signOut = async function () {
