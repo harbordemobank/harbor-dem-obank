@@ -23,24 +23,7 @@ button{padding:11px 18px;border:0;border-radius:6px;color:white;cursor:pointer;m
 <p>Harbor Demo online banking</p>
 </header>
 
-<section class="card">
-  <h2>Customer Sign Up / Sign In</h2>
 
-  <label for="email">Email address</label>
-  <input id="email" type="email"
-         placeholder="Enter your email"
-         autocomplete="email" required
-         style="display:block;width:95%;padding:10px;margin:8px 0;">
-
-  <label for="password">Password</label>
-  <input id="password" type="password"
-         placeholder="Enter your password"
-         autocomplete="current-password" required
-         style="display:block;width:95%;padding:10px;margin:8px 0;">
-
-  <button type="button" onclick="signUp()">Sign Up</button>
-  <button type="button" onclick="signIn()">Sign In</button>
-  <button type="button" onclick="signOut()">Sign Out</button>
 
   
 <section class="card" id="authCard">
@@ -109,7 +92,6 @@ function showAuthForm(type) {
 }
 </script>
 
-</section>
 <section class="card">
 <h2>Welcome</h2>
 
@@ -142,7 +124,7 @@ import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
 
 const supabase = createClient(
   'https://xuyzwadccxbcvhjdwjvh.supabase.co',
-  'PASTE_YOUR_PUBLISHABLE_KEY_HERE'
+  sb_publishable_XFtUhsrB0b8A-jJaY8caKw_K_qQht3l
 );
 
 function showMessage(message) {
