@@ -42,32 +42,73 @@ button{padding:11px 18px;border:0;border-radius:6px;color:white;cursor:pointer;m
   <button type="button" onclick="signIn()">Sign In</button>
   <button type="button" onclick="signOut()">Sign Out</button>
 
-  <p id="authMessage" role="status">
-    Sign in or create an account to continue.
-  </p>
-</section>
-<section class="card">
-  <h2>Customer Sign Up / Sign In</h2>
+  
+<section class="card" id="authCard">
+  <h2>Harbor Demo Banking</h2>
+  <p>Create a demo account or sign in to an existing one.</p>
 
-  <label for="email">Email address</label>
-  <input id="email" type="email"
-         placeholder="Enter your email"
-         autocomplete="email"
-         style="display:block;width:95%;padding:10px;margin:8px 0;">
+  <div style="display:flex;gap:10px;margin:16px 0;">
+    <button type="button" onclick="showAuthForm('signup')"
+      style="flex:1;background:#1769d2;color:white;padding:12px;border:0;border-radius:6px;">
+      Sign Up
+    </button>
+    <button type="button" onclick="showAuthForm('signin')"
+      style="flex:1;background:#16834a;color:white;padding:12px;border:0;border-radius:6px;">
+      Sign In
+    </button>
+  </div>
 
-  <label for="password">Password</label>
-  <input id="password" type="password"
-         placeholder="Enter your password"
-         autocomplete="current-password"
-         style="display:block;width:95%;padding:10px;margin:8px 0;">
+  <div id="signupForm">
+    <h3>Create a New Account</h3>
+    <label for="fullName">Full name</label>
+    <input id="fullName" type="text" placeholder="Enter your full name"
+      autocomplete="name" style="display:block;width:95%;padding:10px;margin:8px 0;">
 
-  <button type="button" onclick="signUp()">Sign Up</button>
-  <button type="button" onclick="signIn()">Sign In</button>
+    <label for="signupEmail">Email address</label>
+    <input id="signupEmail" type="email" placeholder="Enter your email address"
+      autocomplete="email" style="display:block;width:95%;padding:10px;margin:8px 0;">
+
+    <label for="signupPassword">Create password</label>
+    <input id="signupPassword" type="password" placeholder="Create a password"
+      autocomplete="new-password" style="display:block;width:95%;padding:10px;margin:8px 0;">
+
+    <button type="button" onclick="signUp()"
+      style="background:#1769d2;color:white;padding:12px;border:0;border-radius:6px;">
+      Create Account
+    </button>
+  </div>
+
+  <div id="signinForm" hidden>
+    <h3>Sign In to Your Account</h3>
+    <label for="signinEmail">Email address</label>
+    <input id="signinEmail" type="email" placeholder="Enter your email address"
+      autocomplete="username" style="display:block;width:95%;padding:10px;margin:8px 0;">
+
+    <label for="signinPassword">Password</label>
+    <input id="signinPassword" type="password" placeholder="Enter your password"
+      autocomplete="current-password" style="display:block;width:95%;padding:10px;margin:8px 0;">
+
+    <button type="button" onclick="signIn()"
+      style="background:#16834a;color:white;padding:12px;border:0;border-radius:6px;">
+      Sign In
+    </button>
+  </div>
+
+  <p id="authMessage" role="status">Choose Sign Up or Sign In.</p>
   <button type="button" onclick="signOut()">Sign Out</button>
+</section>
 
-  <p id="authMessage" role="status">
-    Sign in or create an account to continue.
-  </p>
+<script>
+function showAuthForm(type) {
+  document.getElementById('signupForm').hidden = type !== 'signup';
+  document.getElementById('signinForm').hidden = type !== 'signin';
+  document.getElementById('authMessage').textContent =
+    type === 'signup'
+      ? 'Enter your full name, email, and password.'
+      : 'Enter your email and password to sign in.';
+}
+</script>
+
 </section>
 <section class="card">
 <h2>Welcome</h2>
@@ -95,7 +136,8 @@ document.getElementById('message').textContent='Demo status updated. No real tra
 <footer style="text-align:center;padding:20px;color:#66758a">
 Demo online banking.
 </footer>
-  <script type="module">
+  
+<script type="module">
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
 
 const supabase = createClient(
@@ -104,40 +146,70 @@ const supabase = createClient(
 );
 
 function showMessage(message) {
-  document.getElementById('authMessage').textContent = message;
+  const el = document.getElementById('authMessage');
+  if (el) el.textContent = message;
 }
 
 window.signUp = async function () {
-  const email = document.getElementById('email').value.trim();
-  const password = document.getElementById('password').value;
+  const fullName = document.getElementById('fullName').value.trim();
+  const email = document.getElementById('signupEmail').value.trim();
+  const password = document.getElementById('signupPassword').value;
 
-  if (!email || !password) {
-    showMessage('Enter your email and password.');
+  if (!fullName || !email || !password) {
+    showMessage('Please enter your full name, email address, and password.');
     return;
   }
 
-  const { error } = await supabase.auth.signUp({ email, password });
+  showMessage('Creating your demo account...');
 
-  showMessage(error ? error.message :
-    'Signup started. Check your email if confirmation is required.');
+  const { data, error } = await supabase.auth.signUp({
+    email,
+    password,
+    options: {
+      data: { full_name: fullName },
+      emailRedirectTo: window.location.href.split('#')[0]
+    }
+  });
+
+  if (error) {
+    showMessage('Sign-up error: ' + error.message);
+  } else if (data.session) {
+    showMessage('Demo account created. You are signed in.');
+  } else {
+    showMessage('Signup received. Check your email to confirm your account.');
+  }
 };
 
 window.signIn = async function () {
-  const email = document.getElementById('email').value.trim();
-  const password = document.getElementById('password').value;
+  const email = document.getElementById('signinEmail').value.trim();
+  const password = document.getElementById('signinPassword').value;
+
+  if (!email || !password) {
+    showMessage('Enter your email address and password.');
+    return;
+  }
+
+  showMessage('Signing in...');
 
   const { data, error } = await supabase.auth.signInWithPassword({
-    email, password
+    email,
+    password
   });
 
-  showMessage(error ? error.message :
-    'Signed in successfully: ' + data.user.email);
+  if (error) {
+    showMessage('Sign-in error: ' + error.message);
+  } else {
+    showMessage('Signed in successfully: ' + data.user.email);
+  }
 };
 
 window.signOut = async function () {
   const { error } = await supabase.auth.signOut();
-  showMessage(error ? error.message : 'You have signed out.');
+  showMessage(error
+    ? 'Sign-out error: ' + error.message
+    : 'You have signed out.');
 };
-  </script>
+</script>
+
 </body>
 </html>
