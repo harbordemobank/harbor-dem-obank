@@ -101,6 +101,22 @@ function showAuthForm(type) {
 <p>DEMO USER</p>
 </div>
 </section>
+  
+<section class="card" id="dashboard" hidden>
+  <h2>Account Dashboard</h2>
+  <p>Welcome to Harbor Demo Banking.</p>
+  <p>Signed in as: <strong id="dashboardEmail"></strong></p>
+
+  <div class="bankcard">
+    <strong>HARBOR DEMO BANKING</strong>
+    <p>DEMO ACCOUNT</p>
+    <p>Account dashboard</p>
+  </div>
+
+  <p>Your account dashboard is now open.</p>
+  <button type="button" onclick="signOut()">Sign Out</button>
+</section>
+
 </main>
 <script>
 function updateStatus(value){
@@ -175,8 +191,10 @@ window.signIn = async function () {
   if (error) {
     showMessage('Sign-in error: ' + error.message);
   } else {
-    showMessage('Signed in successfully: ' + data.user.email);
-    window.location.href = window.location.href.split('#')[0];
+    showMessage('Signed in successfully!');
+document.getElementById('authCard').hidden = true;
+document.getElementById('dashboard').hidden = false;
+document.getElementById('dashboardEmail').textContent = data.user.email;
   }
 
 };
