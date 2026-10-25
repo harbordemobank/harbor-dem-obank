@@ -181,6 +181,35 @@ function showAuthForm(type) {
   <p id="demoMessage" role="status"></p>
   <button type="button" class="reject"
     onclick="signOut()">Sign Out</button>
+  
+  <div class="card" id="adminPanel" hidden>
+    <h2>Admin Panel — Demo Only</h2>
+    <p>Manage virtual demo transactions and balances.</p>
+
+    <button type="button" class="approve"
+      onclick="loadAdminTransactions()">Refresh Requests</button>
+
+    <p id="adminMessage" role="status"></p>
+    <ul id="adminTransactionList"></ul>
+
+    <h3>Fund a Demo Account</h3>
+
+    <label for="fundUserId">User ID</label>
+    <input id="fundUserId" type="text"
+      placeholder="Paste the user's ID">
+
+    <label for="fundAmount">Amount (USD)</label>
+    <input id="fundAmount" type="number"
+      min="0.01" step="0.01" placeholder="Enter amount">
+
+    <label for="fundNote">Admin note (optional)</label>
+    <input id="fundNote" type="text"
+      placeholder="Enter a note">
+
+    <button type="button" class="approve"
+      onclick="fundDemoAccount()">Add Virtual Demo Funds</button>
+  </div>
+
 </section>
 
 
@@ -214,6 +243,7 @@ async function restoreSession() {
 
   document.getElementById('authCard').hidden = true;
   document.getElementById('dashboard').hidden = false;
+  await checkAdminAccess();
   document.getElementById('dashboardEmail').textContent =
     user.email || '';
   
@@ -317,6 +347,7 @@ window.signIn = async function () {
     showMessage('Signed in successfully!');
 document.getElementById('authCard').hidden = true;
 document.getElementById('dashboard').hidden = false;
+    await checkAdminAccess();
 document.getElementById('dashboardEmail').textContent = data.user.email;
     
 currentUserId = data.user.id;
@@ -489,6 +520,137 @@ window.processDemoAction = async function () {
   }
 
   message.textContent = 'Please select a valid demo action.';
+};
+
+async function checkAdminAccess() {
+  const { data, error } = await supabase.rpc('is_demo_admin');
+
+  const panel = document.getElementById('adminPanel');
+
+  if (error || data !== true) {
+    panel.hidden = true;
+    return;
+  }
+
+  panel.hidden = false;
+  await window.loadAdminTransactions();
+}
+
+window.loadAdminTransactions = async function () {
+  const message = document.getElementById('adminMessage');
+  const list = document.getElementById('adminTransactionList');
+
+  message.textContent = 'Loading requests...';
+  list.replaceChildren();
+
+  const { data, error } = await supabase
+    .from('demo_transactions')
+    .select('id,user_id,transaction_type,account_full_name,bank_name,demo_amount,status,created_at')
+    .order('created_at', { ascending: false });
+
+  if (error) {
+    message.textContent = 'Could not load requests: ' + error.message;
+    return;
+  }
+
+  if (!data || data.length === 0) {
+    message.textContent = 'No demo transaction requests found.';
+    return;
+  }
+
+  data.forEach(function (transaction) {
+    const item = document.createElement('li');
+    const details = document.createElement('p');
+
+    details.textContent =
+      transaction.transaction_type + ' — $' +
+      Number(transaction.demo_amount).toFixed(2) +
+      ' — ' + transaction.status +
+      ' — Name: ' + transaction.account_full_name +
+      ' — User ID: ' + transaction.user_id;
+
+    item.appendChild(details);
+
+    if (transaction.bank_name) {
+      const bank = document.createElement('p');
+      bank.textContent = 'Bank: ' + transaction.bank_name;
+      item.appendChild(bank);
+    }
+
+    if (transaction.status === 'PENDING') {
+      ['APPROVED', 'REJECTED'].forEach(function (decision) {
+        const button = document.createElement('button');
+        button.type = 'button';
+        button.textContent = decision;
+        button.onclick = function () {
+          window.reviewDemoTransaction(transaction.id, decision);
+        };
+        item.appendChild(button);
+      });
+    }
+
+    list.appendChild(item);
+  });
+
+  message.textContent = 'Requests loaded.';
+};
+
+window.reviewDemoTransaction = async function (id, decision) {
+  const note = prompt('Optional admin note:') || '';
+
+  const { error } = await supabase.rpc('review_demo_transaction', {
+    p_transaction_id: id,
+    p_decision: decision,
+    p_admin_note: note
+  });
+
+  if (error) {
+    document.getElementById('adminMessage').textContent =
+      'Review failed: ' + error.message;
+    return;
+  }
+
+  document.getElementById('adminMessage').textContent =
+    'Request marked ' + decision + '.';
+
+  await window.loadAdminTransactions();
+};
+
+window.fundDemoAccount = async function () {
+  const userId = document.getElementById('fundUserId').value.trim();
+  const amount = Number(document.getElementById('fundAmount').value);
+  const note = document.getElementById('fundNote').value.trim();
+  const message = document.getElementById('adminMessage');
+
+  if (!userId || !Number.isFinite(amount) || amount <= 0) {
+    message.textContent = 'Enter a valid user ID and amount.';
+    return;
+  }
+
+  message.textContent = 'Adding virtual demo funds...';
+
+  const { data, error } = await supabase.rpc(
+    'admin_fund_demo_account',
+    {
+      p_user_id: userId,
+      p_amount: amount,
+      p_admin_note: note || null
+    }
+  );
+
+  if (error) {
+    message.textContent = 'Funding failed: ' + error.message;
+    return;
+  }
+
+  message.textContent =
+    'Virtual funds added successfully. New demo balance: $' +
+    Number(data.new_balance).toFixed(2);
+
+  document.getElementById('fundAmount').value = '';
+  document.getElementById('fundNote').value = '';
+
+  await window.loadAdminTransactions();
 };
 
 
