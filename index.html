@@ -134,20 +134,44 @@ function showAuthForm(type) {
   <button type="button" class="approve"
     onclick="openDemoAction('Transfer')">Transfer</button>
 
-  <div id="demoActionPanel" class="card" hidden>
-    <h3 id="demoActionTitle">Demo Transaction</h3>
-    <p id="demoActionNotice">
-      Demo only. No real funds will be moved.
-    </p>
-    <label for="demoAmount">Amount (USD)</label>
-    <input id="demoAmount" type="number" min="0.01" step="0.01"
-      placeholder="Enter amount"
+  
+<div id="demoActionPanel" class="card" hidden>
+  <h3 id="demoActionTitle">Demo Transaction</h3>
+  <p id="demoActionNotice">
+    Demo does not support fraudulent activities.
+  </p>
+
+  <div id="bankDetailsPanel" hidden>
+    <label for="accountFullName">Account full name</label>
+    <input id="accountFullName" type="text"
+      autocomplete="off" placeholder="Enter full name"
       style="display:block;padding:10px;margin:8px 0;width:90%">
-    <button type="button" class="approve"
-      onclick="processDemoAction()">Submit Demo Transaction</button>
-    <button type="button" class="reject"
-      onclick="closeDemoAction()">Cancel</button>
+
+    <label for="bankName">Bank name</label>
+    <input id="bankName" type="text"
+      autocomplete="off" placeholder="Enter bank name"
+      style="display:block;padding:10px;margin:8px 0;width:90%">
+
+    <label for="bankAccountNumber">Bank account number</label>
+    <input id="bankAccountNumber" type="text"
+      inputmode="numeric" autocomplete="off"
+      placeholder="Enter demo account number"
+      style="display:block;padding:10px;margin:8px 0;width:90%">
   </div>
+
+  <label for="demoAmount">Amount (USD)</label>
+  <input id="demoAmount" type="number" min="0.01" step="0.01"
+    placeholder="Enter amount"
+    style="display:block;padding:10px;margin:8px 0;width:90%">
+
+  <p>Demo only. Do not enter real banking details. No actual bank transaction will be made.</p>
+
+  <button type="button" class="approve"
+    onclick="processDemoAction()">Submit Demo Transaction</button>
+  <button type="button" class="reject"
+    onclick="closeDemoAction()">Cancel</button>
+</div>
+
 
   <h3>Demo Transaction History</h3>
   <ul id="demoHistory">
@@ -263,19 +287,35 @@ window.signOut = async function () {
 let demoBalance = 1000;
 let currentDemoAction = '';
 
+
 window.openDemoAction = function (action) {
   currentDemoAction = action;
+
   document.getElementById('demoActionTitle').textContent =
     action + ' — Demo Only';
+
   document.getElementById('demoActionPanel').hidden = false;
+
+  const bankDetailsPanel =
+    document.getElementById('bankDetailsPanel');
+
+  bankDetailsPanel.hidden =
+    action !== 'Withdraw' && action !== 'Transfer';
+
+  document.getElementById('accountFullName').value = '';
+  document.getElementById('bankName').value = '';
+  document.getElementById('bankAccountNumber').value = '';
   document.getElementById('demoAmount').value = '';
+
   document.getElementById('demoMessage').textContent =
-    'Virtual demo only. No real funds will move.';
+    'Demo does not support fraudulent activities.';
 };
+
 
 window.closeDemoAction = function () {
   document.getElementById('demoActionPanel').hidden = true;
 };
+
 
 window.processDemoAction = function () {
   const amount = Number(document.getElementById('demoAmount').value);
@@ -285,6 +325,25 @@ window.processDemoAction = function () {
   if (!Number.isFinite(amount) || amount <= 0) {
     message.textContent = 'Enter a valid amount greater than zero.';
     return;
+  }
+
+  if (currentDemoAction === 'Withdraw' ||
+      currentDemoAction === 'Transfer') {
+    const fullName = document.getElementById('accountFullName').value.trim();
+    const bankName = document.getElementById('bankName').value.trim();
+    const accountNumber = document.getElementById('bankAccountNumber').value.trim();
+
+    if (!fullName || !bankName || !accountNumber) {
+      message.textContent =
+        'Please enter the full name, bank name, and account number.';
+      return;
+    }
+
+    if (!/^\d{6,20}$/.test(accountNumber)) {
+      message.textContent =
+        'For this demo, use a sample account number containing 6–20 digits.';
+      return;
+    }
   }
 
   if (currentDemoAction === 'Withdraw' ||
@@ -307,12 +366,14 @@ window.processDemoAction = function () {
   const item = document.createElement('li');
   item.textContent = currentDemoAction + ' demo: $' +
     amount.toFixed(2) +
-    ' — virtual only; no real funds moved.';
+    ' — Demo does not support fraudulent activities.';
   history.prepend(item);
 
-  message.textContent = 'Demo transaction completed.';
+  message.textContent =
+    'Demo transaction recorded.';
   document.getElementById('demoActionPanel').hidden = true;
 };
+
 
 </script>
 
