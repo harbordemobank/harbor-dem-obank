@@ -548,7 +548,7 @@ window.loadAdminTransactions = async function () {
 
   const { data, error } = await supabase
     .from('demo_transactions')
-    .select('id,users_id,transaction_type,account_holder,bank_name,amount,status,created_at')
+    .select('id,user_id,transaction_type,account_holder,bank_name,amount,status,created_at')
     .order('created_at', { ascending: false });
 
   if (error) {
