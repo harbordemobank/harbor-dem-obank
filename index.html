@@ -216,9 +216,39 @@ async function restoreSession() {
   document.getElementById('dashboard').hidden = false;
   document.getElementById('dashboardEmail').textContent =
     user.email || '';
+  
   currentUserId = user.id;
-demoBalance = Number(localStorage.getItem('demoBalance_' + currentUserId)) || 25;
-document.getElementById('demoBalance').textContent = '$' + demoBalance.toFixed(2);
+
+  const { data: account, error: balanceError } = await supabase
+    .from('demo_accounts')
+    .select('balance')
+    .eq('user_id', currentUserId)
+    .maybeSingle();
+
+  if (balanceError) {
+    console.error('Could not load demo balance:', balanceError.message);
+  }
+
+  if (account) {
+    demoBalance = Number(account.balance);
+  } else {
+    const { error: createError } = await supabase
+      .from('demo_accounts')
+      .insert({ user_id: currentUserId, balance: 25 });
+
+    if (createError) {
+      console.error('Could not create demo account:', createError.message);
+    }
+
+    demoBalance = 25;
+  }
+
+  document.getElementById('demoBalance').textContent =
+    '$' + demoBalance.toLocaleString('en-US', {
+      minimumFractionDigits: 2,
+      maximumFractionDigits: 2
+    });
+
 
   const fullName =
     user.user_metadata?.full_name || 'Demo User';
@@ -288,6 +318,41 @@ window.signIn = async function () {
 document.getElementById('authCard').hidden = true;
 document.getElementById('dashboard').hidden = false;
 document.getElementById('dashboardEmail').textContent = data.user.email;
+    
+currentUserId = data.user.id;
+
+const { data: account, error: balanceError } = await supabase
+  .from('demo_accounts')
+  .select('balance')
+  .eq('user_id', currentUserId)
+  .maybeSingle();
+
+if (balanceError) {
+  showMessage('Could not load demo balance: ' + balanceError.message);
+  return;
+}
+
+if (account) {
+  demoBalance = Number(account.balance);
+} else {
+  const { error: createError } = await supabase
+    .from('demo_accounts')
+    .insert({ user_id: currentUserId, balance: 25 });
+
+  if (createError) {
+    showMessage('Could not create demo account: ' + createError.message);
+    return;
+  }
+
+  demoBalance = 25;
+}
+
+document.getElementById('demoBalance').textContent =
+  '$' + demoBalance.toLocaleString('en-US', {
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2
+  });
+
     const fullName = data.user.user_metadata?.full_name || 'Demo User';
 document.getElementById('dashboardName').textContent = fullName;
 document.getElementById('cardholderName').textContent = fullName;
