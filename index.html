@@ -347,6 +347,7 @@ window.signIn = async function () {
     showMessage('Signed in successfully!');
 document.getElementById('authCard').hidden = true;
 document.getElementById('dashboard').hidden = false;
+    window.watchDemoBalance();
     await checkAdminAccess();
 document.getElementById('dashboardEmail').textContent = data.user.email;
     
@@ -523,6 +524,57 @@ window.processDemoAction = async function () {
   }
 
   message.textContent = 'Please select a valid demo action.';
+};
+
+window.refreshDemoBalance = async function () {
+  if (!currentUserId) return;
+
+  const { data: account, error } = await supabase
+    .from('demo_accounts')
+    .select('balance')
+    .eq('user_id', currentUserId)
+    .maybeSingle();
+
+  if (error) {
+    showMessage('Could not refresh demo balance: ' + error.message);
+    return;
+  }
+
+  if (!account) return;
+
+  demoBalance = Number(account.balance);
+
+  document.getElementById('demoBalance').textContent =
+    '$' + demoBalance.toLocaleString('en-US', {
+      minimumFractionDigits: 2,
+      maximumFractionDigits: 2
+    });
+};
+
+let demoBalanceSubscription = null;
+
+window.watchDemoBalance = function () {
+  if (!currentUserId) return;
+
+  if (demoBalanceSubscription) {
+    supabase.removeChannel(demoBalanceSubscription);
+  }
+
+  demoBalanceSubscription = supabase
+    .channel('demo-balance-' + currentUserId)
+    .on(
+      'postgres_changes',
+      {
+        event: '*',
+        schema: 'public',
+        table: 'demo_accounts',
+        filter: 'user_id=eq.' + currentUserId
+      },
+      async () => {
+        await window.refreshDemoBalance();
+      }
+    )
+    .subscribe();
 };
 
 async function checkAdminAccess() {
