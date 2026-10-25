@@ -216,6 +216,9 @@ async function restoreSession() {
   document.getElementById('dashboard').hidden = false;
   document.getElementById('dashboardEmail').textContent =
     user.email || '';
+  currentUserId = user.id;
+demoBalance = Number(localStorage.getItem('demoBalance_' + currentUserId)) || 25;
+document.getElementById('demoBalance').textContent = '$' + demoBalance.toFixed(2);
 
   const fullName =
     user.user_metadata?.full_name || 'Demo User';
@@ -308,6 +311,7 @@ window.signOut = async function () {
 
   
 let demoBalance = 25;
+let currentUserId = null;
 let currentDemoAction = '';
 
 
@@ -385,6 +389,9 @@ window.processDemoAction = function () {
       minimumFractionDigits: 2,
       maximumFractionDigits: 2
     });
+  if (currentUserId) {
+  localStorage.setItem('demoBalance_' + currentUserId, demoBalance);
+    }
 
   const item = document.createElement('li');
   item.textContent = currentDemoAction + ' demo: $' +
