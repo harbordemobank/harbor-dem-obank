@@ -110,7 +110,7 @@ function showAuthForm(type) {
 
   <div class="card">
     <h3>Demo Account Balance</h3>
-    <h2 id="demoBalance">$1,000.00</h2>
+    <h2 id="demoBalance">$25.00</h2>
     <p>Virtual demo funds</p>
   </div>
 
@@ -175,7 +175,7 @@ function showAuthForm(type) {
 
   <h3>Demo Transaction History</h3>
   <ul id="demoHistory">
-    <li>Demo account opened with $1,000.00 virtual balance.</li>
+    <li>Demo account opened with $20.00 starting credit and $5.00 welcome bonus. Total balance: $25.00.</li>
   </ul>
 
   <p id="demoMessage" role="status"></p>
@@ -202,6 +202,29 @@ const supabase = createClient(
   'https://xuyzwadccxbcvhjdwjvh.supabase.co',
   'sb_publishable_XFtUhsrB0b8A-jJaY8caKw_K_qQht3l'
 );
+
+async function restoreSession() {
+  const { data, error } = await supabase.auth.getSession();
+
+  if (error || !data.session) {
+    return;
+  }
+
+  const user = data.session.user;
+
+  document.getElementById('authCard').hidden = true;
+  document.getElementById('dashboard').hidden = false;
+  document.getElementById('dashboardEmail').textContent =
+    user.email || '';
+
+  const fullName =
+    user.user_metadata?.full_name || 'Demo User';
+
+  document.getElementById('dashboardName').textContent = fullName;
+  document.getElementById('cardholderName').textContent = fullName;
+}
+
+restoreSession();
 
 function showMessage(message) {
   const el = document.getElementById('authMessage');
@@ -284,7 +307,7 @@ window.signOut = async function () {
 };
 
   
-let demoBalance = 1000;
+let demoBalance = 25;
 let currentDemoAction = '';
 
 
