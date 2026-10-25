@@ -569,7 +569,7 @@ window.loadAdminTransactions = async function () {
   transaction.transaction_type + ' — $' +
   Number(transaction.amount).toFixed(2) +
   ' — ' + transaction.status +
-  ' — Name: ' + transaction.account_holder +
+  ' — Name: ' + (transaction.account_holder || 'Demo account') +
   ' — User ID: ' + transaction.user_id;
 
     item.appendChild(details);
