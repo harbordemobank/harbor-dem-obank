@@ -344,7 +344,8 @@ window.closeDemoAction = function () {
 };
 
 
-window.processDemoAction = function () {
+
+window.processDemoAction = async function () {
   const amount = Number(document.getElementById('demoAmount').value);
   const message = document.getElementById('demoMessage');
   const history = document.getElementById('demoHistory');
@@ -362,47 +363,69 @@ window.processDemoAction = function () {
 
     if (!fullName || !bankName || !accountNumber) {
       message.textContent =
-        'Please enter the full name, bank name, and account number.';
+        'Enter the demo account name, bank name, and sample account number.';
       return;
     }
 
     if (!/^\d{6,20}$/.test(accountNumber)) {
       message.textContent =
-        'For this demo, use a sample account number containing 6–20 digits.';
+        'Use a fictional sample account number containing 6–20 digits.';
       return;
     }
-  }
 
-  if (currentDemoAction === 'Withdraw' ||
-      currentDemoAction === 'Transfer') {
-    if (amount > demoBalance) {
-      message.textContent = 'Insufficient virtual demo balance.';
+    message.textContent = 'Submitting demo request...';
+
+    const { data, error } = await supabase.rpc(
+      'submit_demo_transaction',
+      {
+        p_transaction_type: currentDemoAction,
+        p_account_full_name: fullName,
+        p_bank_name: bankName,
+        p_amount: amount
+      }
+    );
+
+    if (error) {
+      message.textContent = error.message;
       return;
     }
-    demoBalance -= amount;
-  } else if (currentDemoAction === 'Receive') {
-    demoBalance += amount;
-  }
 
-  document.getElementById('demoBalance').textContent =
-    '$' + demoBalance.toLocaleString('en-US', {
-      minimumFractionDigits: 2,
-      maximumFractionDigits: 2
-    });
-  if (currentUserId) {
-  localStorage.setItem('demoBalance_' + currentUserId, demoBalance);
+    demoBalance = Number(data.new_balance);
+
+    document.getElementById('demoBalance').textContent =
+      '$' + demoBalance.toLocaleString('en-US', {
+        minimumFractionDigits: 2,
+        maximumFractionDigits: 2
+      });
+
+    if (currentUserId) {
+      localStorage.setItem(
+        'demoBalance_' + currentUserId,
+        String(demoBalance)
+      );
     }
 
-  const item = document.createElement('li');
-  item.textContent = currentDemoAction + ' demo: $' +
-    amount.toFixed(2) +
-    ' — Demo does not support fraudulent activities.';
-  history.prepend(item);
+    const item = document.createElement('li');
+    item.textContent =
+      currentDemoAction + ' — $' + amount.toFixed(2) +
+      ' — PENDING — Virtual demo request only.';
+    history.prepend(item);
 
-  message.textContent =
-    'Demo transaction recorded.';
-  document.getElementById('demoActionPanel').hidden = true;
+    message.textContent =
+      'Request submitted. Virtual balance deducted. Status: PENDING.';
+    document.getElementById('demoActionPanel').hidden = true;
+    return;
+  }
+
+  if (currentDemoAction === 'Receive') {
+    message.textContent =
+      'Receiving virtual demo funds must be configured through the admin funding feature.';
+    return;
+  }
+
+  message.textContent = 'Please select a valid demo action.';
 };
+
 
 
 </script>
