@@ -474,7 +474,9 @@ window.processDemoAction = async function () {
     const { data, error } = await supabase.rpc(
       'submit_demo_transaction',
       {
-        p_transaction_type: currentDemoAction,
+        p_transaction_type: currentDemoAction === 'Withdraw'
+  ? 'Bank Withdrawal'
+  : 'Bitcoin Withdrawal',
         p_account_full_name: fullName,
         p_bank_name: bankName,
         p_amount: amount
@@ -503,8 +505,9 @@ window.processDemoAction = async function () {
 
     const item = document.createElement('li');
     item.textContent =
-      currentDemoAction + ' — $' + amount.toFixed(2) +
-      ' — PENDING — Virtual demo request only.';
+  (currentDemoAction === 'Withdraw' ? 'Bank Withdrawal' : 'Bitcoin Withdrawal') +
+  ' — $' + amount.toFixed(2) +
+  ' — Pending (Demo) — Virtual demo request only.';
     history.prepend(item);
 
     message.textContent =
