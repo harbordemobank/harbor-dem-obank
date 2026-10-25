@@ -548,7 +548,7 @@ window.loadAdminTransactions = async function () {
 
   const { data, error } = await supabase
     .from('demo_transactions')
-    .select('id,user_id,transaction_type,account_full_name,bank_name,demo_amount,status,created_at')
+    .select('id,users_id,transaction_type,account_holder,bank_name,amount,status,created_at')
     .order('created_at', { ascending: false });
 
   if (error) {
@@ -566,11 +566,11 @@ window.loadAdminTransactions = async function () {
     const details = document.createElement('p');
 
     details.textContent =
-      transaction.transaction_type + ' — $' +
-      Number(transaction.demo_amount).toFixed(2) +
-      ' — ' + transaction.status +
-      ' — Name: ' + transaction.account_full_name +
-      ' — User ID: ' + transaction.user_id;
+  transaction.transaction_type + ' — $' +
+  Number(transaction.amount).toFixed(2) +
+  ' — ' + transaction.status +
+  ' — Name: ' + transaction.account_holder +
+  ' — User ID: ' + transaction.users_id;
 
     item.appendChild(details);
 
@@ -580,7 +580,7 @@ window.loadAdminTransactions = async function () {
       item.appendChild(bank);
     }
 
-    if (transaction.status === 'PENDING') {
+    if (transaction.status === 'Pending (Demo)') {
       ['APPROVED', 'REJECTED'].forEach(function (decision) {
         const button = document.createElement('button');
         button.type = 'button';
