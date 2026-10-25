@@ -347,11 +347,13 @@ window.signIn = async function () {
     showMessage('Signed in successfully!');
 document.getElementById('authCard').hidden = true;
 document.getElementById('dashboard').hidden = false;
-    window.watchDemoBalance();
-    await checkAdminAccess();
 document.getElementById('dashboardEmail').textContent = data.user.email;
-    
+
 currentUserId = data.user.id;
+await window.refreshDemoBalance();
+window.watchDemoBalance();
+await checkAdminAccess();
+  
 
 const { data: account, error: balanceError } = await supabase
   .from('demo_accounts')
