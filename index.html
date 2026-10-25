@@ -102,20 +102,63 @@ function showAuthForm(type) {
 </div>
 </section>
   
+
 <section class="card" id="dashboard" hidden>
   <h2>Account Dashboard</h2>
-  <p>Welcome to Harbor Demo Banking.</p>
+  <p>Welcome, <strong id="dashboardName">Demo User</strong></p>
   <p>Signed in as: <strong id="dashboardEmail"></strong></p>
+
+  <div class="card">
+    <h3>Demo Account Balance</h3>
+    <h2 id="demoBalance">$1,000.00</h2>
+    <p>Virtual demo funds</p>
+  </div>
+
+  <div class="card">
+    <h3>KYC Status</h3>
+    <p class="status">NOT VERIFIED</p>
+  </div>
 
   <div class="bankcard">
     <strong>HARBOR DEMO BANKING</strong>
     <p>DEMO ACCOUNT</p>
-    <p>Account dashboard</p>
+    <p id="cardholderName">Demo User</p>
+    <p>For demonstration only</p>
   </div>
 
-  <p>Your account dashboard is now open.</p>
-  <button type="button" onclick="signOut()">Sign Out</button>
+  <h3>Account Actions</h3>
+  <button type="button" class="approve"
+    onclick="openDemoAction('Withdraw')">Withdraw</button>
+  <button type="button" class="approve"
+    onclick="openDemoAction('Receive')">Receive</button>
+  <button type="button" class="approve"
+    onclick="openDemoAction('Transfer')">Transfer</button>
+
+  <div id="demoActionPanel" class="card" hidden>
+    <h3 id="demoActionTitle">Demo Transaction</h3>
+    <p id="demoActionNotice">
+      Demo only. No real funds will be moved.
+    </p>
+    <label for="demoAmount">Amount (USD)</label>
+    <input id="demoAmount" type="number" min="0.01" step="0.01"
+      placeholder="Enter amount"
+      style="display:block;padding:10px;margin:8px 0;width:90%">
+    <button type="button" class="approve"
+      onclick="processDemoAction()">Submit Demo Transaction</button>
+    <button type="button" class="reject"
+      onclick="closeDemoAction()">Cancel</button>
+  </div>
+
+  <h3>Demo Transaction History</h3>
+  <ul id="demoHistory">
+    <li>Demo account opened with $1,000.00 virtual balance.</li>
+  </ul>
+
+  <p id="demoMessage" role="status"></p>
+  <button type="button" class="reject"
+    onclick="signOut()">Sign Out</button>
 </section>
+
 
 </main>
 <script>
@@ -205,6 +248,61 @@ window.signOut = async function () {
     ? 'Sign-out error: ' + error.message
     : 'You have signed out.');
 };
+  
+let demoBalance = 1000;
+let currentDemoAction = '';
+
+window.openDemoAction = function (action) {
+  currentDemoAction = action;
+  document.getElementById('demoActionTitle').textContent =
+    action + ' — Demo Only';
+  document.getElementById('demoActionPanel').hidden = false;
+  document.getElementById('demoAmount').value = '';
+  document.getElementById('demoMessage').textContent =
+    'Virtual demo only. No real funds will move.';
+};
+
+window.closeDemoAction = function () {
+  document.getElementById('demoActionPanel').hidden = true;
+};
+
+window.processDemoAction = function () {
+  const amount = Number(document.getElementById('demoAmount').value);
+  const message = document.getElementById('demoMessage');
+  const history = document.getElementById('demoHistory');
+
+  if (!Number.isFinite(amount) || amount <= 0) {
+    message.textContent = 'Enter a valid amount greater than zero.';
+    return;
+  }
+
+  if (currentDemoAction === 'Withdraw' ||
+      currentDemoAction === 'Transfer') {
+    if (amount > demoBalance) {
+      message.textContent = 'Insufficient virtual demo balance.';
+      return;
+    }
+    demoBalance -= amount;
+  } else if (currentDemoAction === 'Receive') {
+    demoBalance += amount;
+  }
+
+  document.getElementById('demoBalance').textContent =
+    '$' + demoBalance.toLocaleString('en-US', {
+      minimumFractionDigits: 2,
+      maximumFractionDigits: 2
+    });
+
+  const item = document.createElement('li');
+  item.textContent = currentDemoAction + ' demo: $' +
+    amount.toFixed(2) +
+    ' — virtual only; no real funds moved.';
+  history.prepend(item);
+
+  message.textContent = 'Demo transaction completed.';
+  document.getElementById('demoActionPanel').hidden = true;
+};
+
 </script>
 
 </body>
