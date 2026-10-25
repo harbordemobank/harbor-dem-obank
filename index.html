@@ -242,12 +242,20 @@ document.getElementById('dashboardEmail').textContent = data.user.email;
 
 };
 
+
 window.signOut = async function () {
   const { error } = await supabase.auth.signOut();
-  showMessage(error
-    ? 'Sign-out error: ' + error.message
-    : 'You have signed out.');
+
+  if (error) {
+    showMessage('Sign-out error: ' + error.message);
+    return;
+  }
+
+  document.getElementById('dashboard').hidden = true;
+  document.getElementById('authCard').hidden = false;
+  showMessage('You have signed out successfully.');
 };
+
   
 let demoBalance = 1000;
 let currentDemoAction = '';
