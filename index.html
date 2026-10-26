@@ -355,37 +355,7 @@ window.watchDemoBalance();
 await checkAdminAccess();
   
 
-const { data: account, error: balanceError } = await supabase
-  .from('demo_accounts')
-  .select('balance')
-  .eq('user_id', currentUserId)
-  .maybeSingle();
 
-if (balanceError) {
-  showMessage('Could not load demo balance: ' + balanceError.message);
-  return;
-}
-
-if (account) {
-  demoBalance = Number(account.balance);
-} else {
-  const { error: createError } = await supabase
-    .from('demo_accounts')
-    .insert({ user_id: currentUserId, balance: 25 });
-
-  if (createError) {
-    showMessage('Could not create demo account: ' + createError.message);
-    return;
-  }
-
-  demoBalance = 25;
-}
-
-document.getElementById('demoBalance').textContent =
-  '$' + demoBalance.toLocaleString('en-US', {
-    minimumFractionDigits: 2,
-    maximumFractionDigits: 2
-  });
 
     const fullName = data.user.user_metadata?.full_name || 'Demo User';
 document.getElementById('dashboardName').textContent = fullName;
