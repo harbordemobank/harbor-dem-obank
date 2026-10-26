@@ -284,7 +284,9 @@ async function restoreSession() {
     user.user_metadata?.full_name || 'Demo User';
 
   document.getElementById('dashboardName').textContent = fullName;
-  document.getElementById('cardholderName').textContent = fullName;
+document.getElementById('cardholderName').textContent = fullName;
+
+window.watchDemoBalance();
 }
 
 restoreSession();
